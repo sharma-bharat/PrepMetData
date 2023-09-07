@@ -6,7 +6,13 @@ by Bharat Sharma and Anthony Walker
 sharmabd@ornl.gov
 =============================
 
-## Fixing the duplicate time index
+Steps:
+1. Fixing the Duplicate/Incorrect time information in the original data: `FixingDupicateDuke.py`
+2. Data Processing and variable calculations: `MET_Data_Processing.py`
+3. Based on outputs from 2., process data in FACEMDS format: `MET_Data_Process2FACEMDS.py`
+4. 
+
+## 1. Fixing the duplicate time index
 There are some duplicate/incorrect time information in the original data in the year 2007 and 2009 across all variables. <br>
 We wrote a code to fix the files : `FixingDupicateDuke.py` <br>
 Usage example:
@@ -14,7 +20,7 @@ Usage example:
 This will replace tge gap filled files with correct values <br>
 You will also need to download the file `DuplicateDukeDataCorrectIndexOnly.txt` <br>
 
-## Sub-hourly
+## 2. Data Processing Sub-hourly
 
 ### Variable "AT" 
 - Air Temperature (Degree Celsius)
@@ -72,11 +78,14 @@ You will also need to download the file `DuplicateDukeDataCorrectIndexOnly.txt` 
 - Renamed to 'PAR'
 - Calculated the mean of the following plots every time step for the from 1997 to 2012
   - 'PAR'
-  - 'PAR' had values from only one plot for 1997-2007 and from two plots for 2008-2012, which were averaged 
+  - 'PAR' had values from only one plot for 1997-2007 and from two plots for 2008-2012, which were averaged and saved in the same csv/txt file.
 
 ### Variable "Rn"
 - Net radiation (W/m^2) 
 - Renamed to 'Rn'
 - Calculated the mean of the following plots every time step for the from 1997 to 2012
   - 'Rn'
-  - 'Rn' had values from only one plot for 1997-2007 and from two plots for 2008-2012, which were averaged 
+  - 'Rn' had values from only one plot for 1997-2007 and from two plots for 2008-2012, which were averaged and saved in the same csv/txt file.
+
+
+
