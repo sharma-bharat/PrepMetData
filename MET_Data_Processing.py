@@ -629,6 +629,75 @@ with open(DuplicateDataFilename, "a") as duplicate_data:
     duplicate_data.write(f"\n")
 dict_dfs_common[f"{face_var_key}"] = df_tmp_common_gf
 
+## Modification of the variables
+### PAR: PAR 
+#Saving the existing PAR in a new variable 'PAR_ori'. <br>
+#Correcting existing values of PAR that reduce over time because of the degrading sensor <br>
+
+dict_dfs_common['PAR_ori'] = dict_dfs_common['PAR']
+dict_dfs_common['PAR_ori']['PAR_ori'] = dict_dfs_common['PAR_ori']['PAR']
+dict_dfs_common['PAR_ori'] = dict_dfs_common['PAR_ori'].drop(['PAR'], axis=1)
+
+
+for lbl,gr in dict_dfs_common['PAR'].groupby(['Year']):
+    percentiles = np.arange(10, 101, 5)
+    percentile_values = np.percentile(gr['PAR'], percentiles)
+
+# Normalizing based on the 95th percent value
+# Assuming that the sensor was good in the first 3 years
+# Taking the average for first 3 years.
+df_par_per = pd.DataFrame(data= np.array(per_95)[:,1], columns=['PAR_95p'])
+df_par_per.index = np.asarray(np.array(per_95)[:,0], dtype=int)
+df_par_per.index.name = 'Year'
+base_95th = df_par_per.iloc[0:3].mean()
+
+# Factor Reduction in amplitude
+df_par_div_factor = df_par_per/base_95th
+
+df_par_div_factor.columns = ['PAR_divisible_factor']
+# we need to divide the original data with the factor corresponding the year of above array.
+
+# Merge the original DataFrame with the factors DataFrame based on the 'Year' column
+merged_df = dict_dfs_common['PAR'].merge(df_par_div_factor, on='Year', how='left')
+
+# Calculate the modified 'PAR' column by dividing 'PAR' with 'PAR_95p'
+merged_df['Modified_PAR'] = merged_df['PAR'] / merged_df['PAR_divisible_factor']
+
+# Replacing the original PAR with new PAR values
+merged_df['PAR'] = merged_df['Modified_PAR']
+merged_df = merged_df.drop(['Modified_PAR', 'PAR_divisible_factor'], axis=1)
+dict_dfs_common['PAR'] = merged_df
+
+##  Calculating new variables
+### SWdown: SWdown 
+#Calculating it from PAR using the following function: <br>
+#Using the corrected par (umolm-2s-1) we calculate SWDown in (W/m2) <br>
+
+def PAR2SWdown (data, out_units='umolm-2s-1'):
+    """
+    by BS
+    
+    input units: umolm-2s-1
+    -----------------------
+    
+    Returns:
+    --------
+    PAR in desired out_units.
+    
+    Source: https://www.researchgate.net/post/Can-I-convert-PAR-photo-active-radiation-value-of-micro-mole-M2-S-to-Solar-radiation-in-Watt-m2/59ca6422217e201e2b23415f/citation/download
+    It says PAR is 45% of total Solar radiation. However, most models use a factor of 0.5 or 50%. We will go with 0.5. 
+    And 1 W/m2 ≈ 4.6 μmole/m2/s 
+    
+    """
+    if out_units == 'umolm-2s-1':
+        conversion_factor = 2 # (1/0.5)
+    if out_units == 'W/m2':
+        conversion_factor = 2/4.6 # (1/0.5/4.6)
+        
+    return data*conversion_factor
+    
+
+
 
 ### Making a common Dataframe of 30 min data
 """

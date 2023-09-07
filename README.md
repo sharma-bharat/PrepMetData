@@ -88,4 +88,15 @@ You will also need to download the file `DuplicateDukeDataCorrectIndexOnly.txt` 
   - 'Rn' had values from only one plot for 1997-2007 and from two plots for 2008-2012, which were averaged and saved in the same csv/txt file.
 
 
+## Modifications to "PAR"
+- The values of PAR are decreasing over time in the original data. See ![Percentile PAR Plot](misc/PAR_percentile.png) <br>
+- We assume that this is occuring to the degrading PAR sensor. <br>
+- Based on the 95th percentile values, a scalling factor was calculated to attenuate declining PAR ![95th Percentile PAR Plot](misc/95th_per_PAR.png).
+- The figure below shows the comparison of the original and modified PAR. ![Modified PAR](misc/modified_PAR.png).
+- The modified PAR will replace the original PAR in the dataset.
 
+
+## Calculations of new variables
+
+### Variable "SWDown"
+- Based on: PAR
