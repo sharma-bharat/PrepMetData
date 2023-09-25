@@ -82,3 +82,7 @@ Issued addressed:
 - Fixing Incorrect Time Data
 - Formula Used to derive Variables like SWdown and LWdown
 - Codes to download pressure and Wind Data from ERA5
+
+V. Data availability 
+- https://ornl-my.sharepoint.com/personal/ud4_ornl_gov/_layouts/15/onedrive.aspx?view=1
+- Will be published on ESS DIVE
