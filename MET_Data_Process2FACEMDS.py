@@ -28,8 +28,30 @@ paths ["DukeFACE_Oren2022"] = "/Users/ud4/Documents/FACEMDS/MET_Data_Processing/
 paths ["Save_Processed"] = "/Users/ud4/Documents/FACEMDS/MET_Data_Processing/Oren_2022_Met_Data_processed/"
 
 # Read the Processed Data
-df_all_vars_30m_FV = pd.read_csv(f"{paths['Save_Processed']}Processed_Duke_Met_Data_All_Vars_30m_FV.csv")
-df_all_vars_30m = pd.read_csv(f"{paths['Save_Processed']}Processed_Duke_Met_Data_All_Vars_30m.csv")
+df_all_vars_30m_FV = pd.read_csv(f"{paths['Save_Processed']}Processed_Duke_Met_Data_All_Vars_30m_FV.csv",index_col=0)
+df_all_vars_30m = pd.read_csv(f"{paths['Save_Processed']}Processed_Duke_Met_Data_All_Vars_30m.csv",index_col=0)
+
+col_names = [
+    'Year',
+    'DOY',
+    'Time',
+    'Rainf',
+    'Tair',
+    'RH',
+    'VPD',
+    'PAR',
+    'SM',
+    'SWP',
+    'SVP',
+    'Rn',
+    'SLT',
+    'Wind',
+    'PSurf',
+    'aCO2',
+    'eCO2',
+    'Ndep',
+    'SolarElevation',
+]
 
 ## Creating DUKE_forcing_h.txt
 # ----------------------------
@@ -40,17 +62,17 @@ dict_cols = {
 'DTIME':'Fractional day of year',
 'DOY':'Day of year',
 'HRMIN':'Hour:minute, marked at the middle of measurement interval with last two digits as minute',
-'Rainf':' Precipitation (rainfall + snowfall) rate over a time step of measurement, kg/m2/s',
+'Rainf':'Total Precipitation over a time step of measurement',
 'Rainf_f': 'gap-filling flag, 0 = measured, 1 = derived from other variables, 2 = filled by \
-mean diurnal cycle within 5-15 days, 3 = filled by data from nearby weather station, 4 = \
-filled by using NARR (North American Regional Reanalysis) data',
-'Tair':'Mean air temperature over a time step of measurement, Kelvin',
+exising FACEMDS data, 3 = filled by data from nearby weather station, 4 = \
+filled by using ERA5 data',
+'Tair':'Mean air temperature over a time step of measurement',
 'Tair_f':'gap-filling flag',
-'RH':'Mean relative humidity over a time step of measurement, %',
+'RH':'Mean relative humidity over a time step of measurement',
 'RH_f':'gap-filling flag',
-'VPD':'Vapor pressure deficit, Pa',
+'VPD':'Vapor pressure deficit, kPa',
 'VPD_f':'gap-filling flag',
-'PAR':'Incident or downward photosynthetically active radiation, umol/m2/s',   
+'PAR':'Incident or downward photosynthetically active radiation',   
 'PAR_f':'gap-filling flag',    
 'SM':'Soil Moisture integrates measurements from 0 to 30cm depth',
 'SM_f':'gap-filling flag', 
@@ -62,6 +84,18 @@ filled by using NARR (North American Regional Reanalysis) data',
 'Rn_f':'gap-filling flag', 
 'SLT':'Soil Temperature',   
 'SLT_f':'gap-filling flag', 
+'SWdown':'Incident or downward short-wave radiation, W/m2',
+'SWdown_f':'gap-filling flag', 
+'LWdown':'Incident or downward long-wave radiation, W/m2',
+'LWdown_f':'gap-filling flag', 
+'Wind':'Mean wind speed over a time step of measurement, m/s',
+'Wind_f':'gap-filling flag',
+'PSurf': 'Surface barometric pressure, Pa',
+'PSurf_f':'gap-filling flag',
+'aCO2': 'Daily mean ambient CO2 concentration in daytime (solar angle > 15), ppmv',
+'eCO2': 'Daily mean elevated treatment CO2 concentration in daytime (solar angle >15), ppmv',
+'Ndep': 'Total N deposition over a time step of measurement (30 minutes), g/m2/(30-minute)',
+'SolarElevation': 'Solar elevation angle, degree',
 }
 
 # Units of Saving File Format
@@ -80,8 +114,18 @@ dict_units = {
     'SWP':'',
     'SVP':'kPa',
     'Rn':'umol/m2/s',
-    'SLT':'K'
+    'SLT':'K',
+    'SWdown':'W/m2',
+    'LWdown':'W/m2',
+    'Wind':'m/s',
+    'PSurf': 'Pa',
+    'aCO2': 'ppmv',
+    'eCO2': 'ppmv',
+    'Ndep': 'g/m2/(30-minute)',
+    'SolarElevation':'degree',
 }
+
+
 
 df_h = pd.DataFrame(columns=dict_cols.keys())
 df_h['YEAR'] = df_all_vars_30m['Year'].astype(int)
@@ -92,8 +136,6 @@ df_h[list(dict_units.keys())] = df_all_vars_30m[list(dict_units.keys())]
 gap_fill_cols = [col + '_f' for col in list(dict_units.keys())]
 df_h[gap_fill_cols] = 0
 
-#DROPING THE LAST ROW
-df_h.drop(df_h.index[-1], inplace=True)
 for k_var in ['Rainf']:
     factor_add = 0
     factor_multiple = 1/(60*30) # From per day to per second for 48 timesteps in a day i.e. 24*60*60/48
@@ -114,6 +156,47 @@ for k_var in ['VPD']:
 unit_row = pd.Series([dict_units.get(col, '') for col in df_h.columns], index=df_h.columns)
 df_h_save = pd.concat([pd.DataFrame([unit_row]), df_h.iloc[:]]).reset_index(drop=True)
 
+### Correcting the Flags
+'''
+**'gap-filling flag,** <br>
+0 = measured, <br>
+1 = derived from other variables, <br>
+2 = filled by exising FACEMDS data, <br>
+3 = filled by data from nearby weather station, <br>
+4 = filled by using ERA5 data'<br>
+'''
+
+import pickle
+fname_start_dates = f"{paths['Save_Processed']}start_dates_Oren.pkl"
+# Open the pickle file for reading in binary mode
+with open(fname_start_dates, 'rb') as file:
+    dict_start_dates = pickle.load(file)
+
+# Copied from FACE MDS existing till the start date of dataset
+for col_name in ['PAR','RH','Tair','Rainf','VPD'] :
+    flag_col = f'{col_name}_f'
+    year_tmp = dict_start_dates [col_name].Year
+    doy_tmp = dict_start_dates [col_name].DOY
+    time_tmp = dict_start_dates [col_name].Time
+    filter_tmp = df_h_save[(df_h_save['YEAR'] == year_tmp) & (df_h_save['DOY'] == doy_tmp) & (df_h_save['HRMIN'] == time_tmp)]
+    df_h_save[flag_col].iloc[1:filter_tmp.index[0]] = 2
+    
+# ERA5 Source
+for col_name in ['Wind','PSurf']:
+    flag_col = f'{col_name}_f'
+    df_h_save[flag_col][1:] = 4
+    
+# Copied from FACE MDS existing
+for col_name in ['aCO2', 'eCO2', 'Ndep', 'SolarElevation']:
+    flag_col = f'{col_name}_f'
+    df_h_save[flag_col][1:] = 2
+    
+# Derived based on a formula and other variabls
+for col_name in ['SWdown', 'LWdown']:
+    flag_col = f'{col_name}_f'
+    df_h_save[flag_col][1:] = 1
+
+# Saving the output
 df_h_save.to_csv(f"{paths['Save_Processed']}DUKE_forcing_h.csv")
 df_h_save.to_csv(f"{paths['Save_Processed']}DUKE_forcing_h.txt")
 fill_value = -6999.
@@ -147,13 +230,16 @@ dict_units_d = {
     'SWP':'',
     'SVP':'kPa',
     'Rn':'mol/m2/d',
-    'SLT':'K'
+    'SLT':'K',
+    'SWdown':'W/m2',
+    'LWdown':'W/m2',
+    'Wind':'m/s',
+    'PSurf': 'Pa',
+    'aCO2': 'ppmv',
+    'eCO2': 'ppmv',
+    'Ndep': 'g/m2/d',
+    'SolarElevation':'degree',
 }
-
-# Using the datetime index to calculate means
-df_d_wTime = df_h_wTime.resample('D').mean()
-df_d_wTime= df_d_wTime.drop(['DTIME','HRMIN'], axis=1)
-df_d_wTime['DOY'] = round(df_d_wTime['DOY']).astype('int')
 
 # Using the datetime index to calculate means
 df_d_wTime = df_h_wTime.resample('D').mean()
@@ -169,6 +255,8 @@ df_d_wTime['Rainf'] = df_h_wTime[['YEAR', 'DOY', 'Rainf']].resample('D').sum()['
 df_d_wTime['PAR'] = df_h_wTime[['YEAR', 'DOY', 'PAR']].resample('D').sum()['PAR'] * factor_multiple_s2d *10**(-6)
 # For Rn we need to take sum
 df_d_wTime['Rn'] = df_h_wTime[['YEAR', 'DOY', 'Rn']].resample('D').sum()['Rn'] * factor_multiple_s2d *10**(-6)
+# For Ndep we need to take sum
+df_d_wTime['Ndep'] = df_h_wTime[['YEAR', 'DOY', 'Ndep']].resample('D').sum()['Ndep'] * factor_multiple_s2d 
 
 df_d_wTime['YEAR'] =  df_d_wTime['YEAR'].astype('int')
 
@@ -194,17 +282,15 @@ df_d_fv_save.to_csv(f"{paths['Save_Processed']}DUKE_forcing_d_fv.txt")
 # ----------------------------
 # Units of Saving File Format
 # Change: Rainf, kg/m2/d to 'kg/m2/y'; ;  
+# Units of Saving File Format
+# Change: Rainf, kg/m2/d to 'kg/m2/y'; ;  
 dict_units_y = {
     'Rainf':'kg/m2/y', # 'kg/m2/d' to 'kg/m2/y'
     'Tair':'K',
-    'RH':'%',
-    'VPD':'Pa',
-    'PAR':'mol/m2/y',
-    'SM':'',
-    'SWP':'',
-    'SVP':'kPa',
-    'Rn':'mol/m2/y',
-    'SLT':'K'
+    'PSurf': 'Pa',
+    'aCO2': 'ppmv',
+    'eCO2': 'ppmv',
+    'Ndep': 'g/m2/y',
 }
 # Using the datetime index to calculate means
 df_y_wTime = df_d_wTime.resample('Y').mean()
@@ -214,6 +300,11 @@ df_y_wTime['YEAR'] = round(df_y_wTime['YEAR']).astype('int')
 # For Rainf we need to take sum
 df_y_wTime['Rainf'] = df_d_wTime[['YEAR', 'Rainf']].resample('Y').sum()['Rainf']
 df_y_wTime['YEAR'] =  df_y_wTime['YEAR'].astype('int')
+
+# For Ndep we need to take sum
+df_y_wTime['Ndep'] = df_d_wTime[['YEAR', 'Ndep']].resample('Y').sum()['Ndep']
+df_y_wTime['YEAR'] =  df_y_wTime['YEAR'].astype('int')
+
 
 # Reset index to columns
 df_y = df_y_wTime.reset_index()
@@ -246,7 +337,16 @@ cols_netcdf_h = ['YEAR',
   'SWP',
   'SVP',
   'Rn',
-  'SLT']
+  'SLT',
+  'SWdown',
+  'LWdown',
+  'Wind',
+  'PSurf',
+  'aCO2',
+  'eCO2',
+  'Ndep',
+  'SolarElevation'
+                ]
 
 # Convert the DataFrame to an xarray Dataset
 
@@ -265,18 +365,23 @@ ds['DOY'].attrs['long_name'] = "Day of Measurement"
 ds['HRMIN'].attrs['units'] = ""
 ds['HRMIN'].attrs['long_name'] = "Hour:minute - marked at the middle of measurement interval with last two digits as minute"
 # Adding attributes to variables
-for k_var in cols_netcdf_h[-10:]: # looping of last 10 columns
-    ds[k_var].attrs['units'] = dict_units[k_var]
-    ds[k_var].attrs['missing_value'] = fill_value
-    ds[k_var].attrs['long_name'] = dict_cols[k_var]
-    ds[k_var].attrs['associate'] = "Time lat lon"
-    ds[k_var].attrs['axis'] = "TYX"
+for k_var in cols_netcdf_h: # looping of columns
+    if k_var in ['YEAR','DOY','HRMIN']:
+        pass
+    else:
+        ds[k_var].attrs['units'] = dict_units[k_var]
+        ds[k_var].attrs['missing_value'] = fill_value
+        ds[k_var].attrs['long_name'] = dict_cols[k_var]
+        ds[k_var].attrs['associate'] = "Time lat lon"
+        ds[k_var].attrs['axis'] = "TYX"
 
+    
+    
 # Add global attributes to the Dataset
 ds.attrs['site_id'] = "DUKE"
 ds.attrs['title'] = "Half-hourly forcing data from DUKE Forest FACE, North Carolina, USA"
 ds.attrs['history'] = "File Origin - This file was created at Oak Ridge National Laboratory for FACE model data synthesis"
-ds.attrs['creation_date'] = "Aug 24, 2023" ;
+ds.attrs['creation_date'] = "Sep 25, 2023" ;
 ds.attrs['contact'] = 'Bharat Sharma (sharmabd@ornl.gov), Anthony Walker (walkerp@ornl.gov)'
 ds.to_netcdf(f"{paths['Save_Processed']}DUKE_forcing_h.nc")
 
@@ -295,7 +400,16 @@ cols_netcdf_d = ['YEAR',
   'SWP',
   'SVP',
   'Rn',
-  'SLT']
+  'SLT',
+  'SWdown',
+  'LWdown',
+  'Wind',
+  'PSurf',
+  'aCO2',
+  'eCO2',
+  'Ndep',
+  'SolarElevation'
+                ]
 
 # Convert the DataFrame to an xarray Dataset
 df_d_wTime_fv = df_d_wTime.fillna(fill_value)
@@ -311,8 +425,10 @@ ds['YEAR'].attrs['long_name'] = "Year of Measurement"
 ds['DOY'].attrs['units'] = ""
 ds['DOY'].attrs['long_name'] = "Day of Measurement"
 # Adding attributes to variables
-for k_var in cols_netcdf_h[-10:]: # looping of last 10 columns
-    if True:
+for k_var in cols_netcdf_d: # looping of columns
+    if k_var in ['YEAR','DOY','HRMIN']:
+        pass
+    else:
         ds[k_var].attrs['units'] = dict_units_d[k_var]
         ds[k_var].attrs['missing_value'] = fill_value
         ds[k_var].attrs['long_name'] = dict_cols[k_var]
@@ -323,7 +439,7 @@ for k_var in cols_netcdf_h[-10:]: # looping of last 10 columns
 ds.attrs['site_id'] = "DUKE"
 ds.attrs['title'] = "Daily forcing data from DUKE Forest FACE, North Carolina, USA"
 ds.attrs['history'] = "File Origin - This file was created at Oak Ridge National Laboratory for FACE model data synthesis"
-ds.attrs['creation_date'] = "Aug 24, 2023" ;
+ds.attrs['creation_date'] = "Sep 25, 2023" ;
 ds.attrs['contact'] = 'Bharat Sharma (sharmabd@ornl.gov), Anthony Walker (walkerp@ornl.gov)'
 ds.to_netcdf(f"{paths['Save_Processed']}DUKE_forcing_d.nc")
 
@@ -334,14 +450,11 @@ print(f"Dataset saved to {paths['Save_Processed']}DUKE_forcing_d.nc")
 cols_netcdf_y = ['YEAR',
  'Rainf',
   'Tair',
-  'RH',
-  'VPD',
-  'PAR',
-  'SM',
-  'SWP',
-  'SVP',
-  'Rn',
-  'SLT']
+  'PSurf',
+  'aCO2',
+  'eCO2',
+  'Ndep',
+                ]
 
 # Convert the DataFrame to an xarray Dataset
 df_y_wTime_fv = df_y_wTime.fillna(fill_value)
@@ -355,8 +468,10 @@ ds['lat'].attrs['long_name'] = "Latitude"
 ds['YEAR'].attrs['units'] = ""
 ds['YEAR'].attrs['long_name'] = "Year of Measurement"
 # Adding attributes to variables
-for k_var in cols_netcdf_h[-10:]: # looping of last 10 columns
-    if k_var in ['PAR','Rn']:
+for k_var in cols_netcdf_y: # looping of last 10 columns
+    if k_var in ['YEAR','']:
+        pass
+    elif k_var in ['PAR','Rn']:
         ds[k_var].attrs['units'] = dict_units_y[k_var]
         ds[k_var].attrs['missing_value'] = fill_value
         ds[k_var].attrs['long_name'] = f"Mean {dict_cols[k_var]}"
@@ -373,7 +488,7 @@ for k_var in cols_netcdf_h[-10:]: # looping of last 10 columns
 ds.attrs['site_id'] = "DUKE"
 ds.attrs['title'] = "Yearly forcing data from DUKE Forest FACE, North Carolina, USA"
 ds.attrs['history'] = "File Origin - This file was created at Oak Ridge National Laboratory for FACE model data synthesis"
-ds.attrs['creation_date'] = "Aug 24, 2023" ;
+ds.attrs['creation_date'] = "Sep 25, 2023" ;
 ds.attrs['contact'] = 'Bharat Sharma (sharmabd@ornl.gov), Anthony Walker (walkerp@ornl.gov)'
 ds.to_netcdf(f"{paths['Save_Processed']}DUKE_forcing_y.nc")
 

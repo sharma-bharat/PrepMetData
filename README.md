@@ -20,6 +20,19 @@ Usage example:
 This will replace tge gap filled files with correct values <br>
 You will also need to download the file `DuplicateDukeDataCorrectIndexOnly.txt` <br>
 
+## 1.1 Time error
+Some of the variable have an incorrect time in the observation dataset.
+E.g. below is the SLT. Instead of 1500, the data reads 1460. There are 440 instances just for SLT. 
+The fix for this in the `MET_Data_Processing.py`
+
+```
+4349 1999,3378.56,91,1400,11,11.3,11.2,11.5,11.7,12.6   
+4350 1999,3378.58,91,1430,11.1,11.4,11.2,11.6,11.8,12.6 
+4351 1999,3378.6,91,1460,11.2,11.4,11.3,11.6,11.9,12.6  
+4352 1999,3378.63,91,1530,11.2,11.5,11.4,11.7,12,12.7   
+4353 1999,3378.65,91,1600,11.3,11.5,11.4,11.8,12,12.7  
+```
+
 ## 2. Data Processing Sub-hourly
 
 ### Variable "AT" 
@@ -95,8 +108,99 @@ You will also need to download the file `DuplicateDukeDataCorrectIndexOnly.txt` 
 - The figure below shows the comparison of the original and modified PAR. ![Modified PAR](misc/modified_PAR.png).
 - The modified PAR will replace the original PAR in the dataset.
 
+## Varibles copied from Existing FACE MDS data as is:
+ - aCO2 	
+ - eCO2 	
+ - Ndep 	
+ - SolarElevation
 
 ## Calculations of new variables
 
 ### Variable "SWDown"
 - Based on: PAR
+
+## Surface Pressue
+
+![Pressure Comparison Plots](misc/Pressure_Comp.png) <br>
+We compared Pressure from 4 sources:
+- Existing ESS DIVE (based on NARR)
+- [Raleigh Airport Pressure Readings](https://www.ncei.noaa.gov/access/search/data-search/local-climatological-data?dataTypes=HourlySeaLevelPressure&dataTypes=HourlyStationPressure&dataTypes=HourlyWindDirection&dataTypes=HourlyWindSpeed&pageNum=2&startDate=1996-01-01T00:00:00&endDate=2013-01-01T23:59:59&bbox=36.133,-79.020,35.828,-78.714)
+- ERA5 Pressure (see : `Download_ERA5_Data.py` for links and way to request automated downloads)
+- Ameriflux Duke Station 3 ([Citations](misc/citations_for_site_data_BASE-BADM_20230915.csv)) 
+
+The mean surface pressure (Pa) are:
+- ESS DIVE/NARR : 102258
+- Raleigh Airport : 101794
+- ERA5: 99818
+- Ameriflux: 99820
+
+Based on this we are using the pressure data from ERA5
+
+## Wind
+
+We used wind data from ERA5 which provides u10 and v10 wind components in m/s <br>
+we calculate mean wind as: `Wind = (u10^2+v10^2)^0.5`
+
+# Variable names and units
+
+# Dictionary of columns and their descriptions
+```
+dict_cols = {
+'YEAR':'Year of measurement',
+'DTIME':'Fractional day of year',
+'DOY':'Day of year',
+'HRMIN':'Hour:minute, marked at the middle of measurement interval with last two digits as minute',
+'Rainf':'Total Precipitation over a time step of measurement',
+'Rainf_f': 'gap-filling flag, 0 = measured, 1 = derived from other variables, 2 = filled by \
+exising FACEMDS data, 3 = filled by data from nearby weather station, 4 = \
+filled by using ERA5 data',
+'Tair':'Mean air temperature over a time step of measurement',
+'Tair_f':'gap-filling flag',
+'RH':'Mean relative humidity over a time step of measurement',
+'RH_f':'gap-filling flag',
+'VPD':'Vapor pressure deficit, kPa',
+'VPD_f':'gap-filling flag',
+'PAR':'Incident or downward photosynthetically active radiation',   
+'PAR_f':'gap-filling flag',    
+'SM':'Soil Moisture integrates measurements from 0 to 30cm depth',
+'SM_f':'gap-filling flag', 
+'SWP':' Soil Water Potential',
+'SWP_f':'gap-filling flag', 
+'SVP':'Saturated Vapor Pressure',
+'SVP_f':'gap-filling flag', 
+'Rn':'Net Radiation',
+'Rn_f':'gap-filling flag', 
+'SLT':'Soil Temperature',   
+'SLT_f':'gap-filling flag', 
+'Wind':'Mean wind speed over a time step of measurement, m/s',
+'Wind_f':'gap-filling flag',
+'PSurf': 'Surface barometric pressure, Pa',
+'PSurf_f':'gap-filling flag',
+'aCO2': 'Daily mean ambient CO2 concentration in daytime (solar angle > 15), ppmv',
+'eCO2': 'Daily mean elevated treatment CO2 concentration in daytime (solar angle >15), ppmv',
+'Ndep': 'Total N deposition over a time step of measurement (30 minutes), g/m2/(30-minute)',
+'SolarElevation': 'Solar elevation angle, degree',
+}
+```
+
+### Units
+```
+dict_units = {
+    'Rainf':'kg/m2/s', # 'mm' = 'kg/m2/s'
+    'Tair':'K',
+    'RH':'%',
+    'VPD':'Pa',
+    'PAR':'umol/m2/s',
+    'SM':'',
+    'SWP':'',
+    'SVP':'kPa',
+    'Rn':'umol/m2/s',
+    'SLT':'K',
+    'Wind':'m/s',
+    'PSurf': 'Pa',
+    'aCO2': 'ppmv',
+    'eCO2': 'ppmv',
+    'Ndep': 'g/m2/(30-minute)',
+    'SolarElevation':'degree',
+}
+```
