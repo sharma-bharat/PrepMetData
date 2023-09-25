@@ -143,9 +143,8 @@ we calculate mean wind as: `Wind = (u10^2+v10^2)^0.5`
 
 # Variable names and units
 
-# Dictionary of columns and their descriptions
 ```
-dict_cols = {
+
 'YEAR':'Year of measurement',
 'DTIME':'Fractional day of year',
 'DOY':'Day of year',
@@ -179,28 +178,5 @@ filled by using ERA5 data',
 'aCO2': 'Daily mean ambient CO2 concentration in daytime (solar angle > 15), ppmv',
 'eCO2': 'Daily mean elevated treatment CO2 concentration in daytime (solar angle >15), ppmv',
 'Ndep': 'Total N deposition over a time step of measurement (30 minutes), g/m2/(30-minute)',
-'SolarElevation': 'Solar elevation angle, degree',
-}
-```
-
-### Units
-```
-dict_units = {
-    'Rainf':'kg/m2/s', # 'mm' = 'kg/m2/s'
-    'Tair':'K',
-    'RH':'%',
-    'VPD':'Pa',
-    'PAR':'umol/m2/s',
-    'SM':'',
-    'SWP':'',
-    'SVP':'kPa',
-    'Rn':'umol/m2/s',
-    'SLT':'K',
-    'Wind':'m/s',
-    'PSurf': 'Pa',
-    'aCO2': 'ppmv',
-    'eCO2': 'ppmv',
-    'Ndep': 'g/m2/(30-minute)',
-    'SolarElevation':'degree',
-}
+'SolarElevation': 'Solar elevation angle, degree'
 ```
