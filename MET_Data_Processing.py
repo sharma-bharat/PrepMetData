@@ -7,13 +7,14 @@
 ## We have a fix that issue (read Readme_MetData.md)
 
 
-# importing libraries
-import xarray as xr
 import glob
 from datetime import datetime
+
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
+# importing libraries
+import xarray as xr
 
 ## Files
 # - **ELM-DUKE** : has the nc files that we use to run the current version of ELM-FATES <br>

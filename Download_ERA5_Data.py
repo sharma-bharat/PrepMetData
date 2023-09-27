@@ -7,6 +7,7 @@
 # ======================
 
 import sys
+
 import cdsapi
 import numpy as np
 
@@ -112,4 +113,5 @@ month_list = [f"{i:02d}" for i in range(1, 13)]
 # Downloading
 for year in year_list:
     for month in month_list:
+        download_era5land_var(varname, year, month)
         download_era5land_var(varname, year, month)
