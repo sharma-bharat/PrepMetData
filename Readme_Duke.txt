@@ -4,7 +4,7 @@ Site coordinate: latitude = 35.9782, longitude = -79.0942
 File Origin: this file was created at Oak Ridge National Laboratory for FACE modeling
 synthesis
 Date: Sep 25, 2023
-Contact: Anthony Walker (walkerap@ornl.gov), Bharat Sharma (sharmabd@ornl.gov)
+Bharat Sharma (sharmabd@ornl.gov), Contact: Anthony Walker (walkerap@ornl.gov)
 Missing value: -6999
 
 I. Half-hourly file - DUKE_forcing_h.txt

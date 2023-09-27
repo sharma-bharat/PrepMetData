@@ -2,7 +2,7 @@
 This repository is created to help one with tools to process meterological data into continuous timeseries in formats that are in land model readable format.
 
 # Processing of Duke Met Data
-by Bharat Sharma and Anthony Walker 
+by Bharat Sharma and Anthony Walker <br>
 sharmabd@ornl.gov
 =============================
 
@@ -10,9 +10,10 @@ Steps:
 1. Fixing the Duplicate/Incorrect time information in the original data: `FixingDupicateDuke.py`
 2. Data Processing and variable calculations: `MET_Data_Processing.py`
 3. Based on outputs from 2., process data in FACEMDS format: `MET_Data_Process2FACEMDS.py`
-4. 
+4. Based on the outputs from 3., we can make ELM input met data files : `METDATA2ELM.py`
 
-## 1. Fixing the duplicate time index
+## 1. Errors in Input data.
+### 1.1 Fixing the duplicate time index
 There are some duplicate/incorrect time information in the original data in the year 2007 and 2009 across all variables. <br>
 We wrote a code to fix the files : `FixingDupicateDuke.py` <br>
 Usage example:
@@ -20,10 +21,9 @@ Usage example:
 This will replace tge gap filled files with correct values <br>
 You will also need to download the file `DuplicateDukeDataCorrectIndexOnly.txt` <br>
 
-## 1.1 Time error
+### 1.2  Time column has inconsistent time values 
 Some of the variable have an incorrect time in the observation dataset.
 E.g. below is the SLT. Instead of 1500, the data reads 1460. There are 440 instances just for SLT. 
-The fix for this in the `MET_Data_Processing.py`
 
 ```
 4349 1999,3378.56,91,1400,11,11.3,11.2,11.5,11.7,12.6   
@@ -32,6 +32,8 @@ The fix for this in the `MET_Data_Processing.py`
 4352 1999,3378.63,91,1530,11.2,11.5,11.4,11.7,12,12.7   
 4353 1999,3378.65,91,1600,11.3,11.5,11.4,11.8,12,12.7  
 ```
+
+The fix for this in the `MET_Data_Processing.py`
 
 ## 2. Data Processing Sub-hourly
 
@@ -114,11 +116,12 @@ The fix for this in the `MET_Data_Processing.py`
  - Ndep 	
  - SolarElevation
 
-## Calculations of new variables
-
-### Variable "SWDown"
+### Variable "SWdown"
 - Based on: PAR
+- umolm-2s-1 to W/m2 by dividing with 2.3
 
+### Variable "LWdown"
+- based on the implementation in Oneflux:  https://github.com/fluxnet/ONEFlux/blob/9201beb15e6eca57bd6fd23a16cb5e46d4e2de7a/oneflux_steps/qc_auto/src/main.c#L2851-L2882
 ## Surface Pressue
 
 ![Pressure Comparison Plots](misc/Pressure_Comp.png) <br>
@@ -134,7 +137,7 @@ The mean surface pressure (Pa) are:
 - ERA5: 99818
 - Ameriflux: 99820
 
-Based on this we are using the pressure data from ERA5
+Based on this we are using the pressure data from ERA5. See `Download_ERA5_Data.py` to automate downloading data from ERA5. 
 
 ## Wind
 
