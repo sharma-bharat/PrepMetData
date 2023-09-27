@@ -9,7 +9,6 @@
 import sys
 
 import cdsapi
-import numpy as np
 
 varname = [
     "surface_pressure",
