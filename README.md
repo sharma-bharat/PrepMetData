@@ -11,6 +11,7 @@ Steps:
 2. Data Processing and variable calculations: `MET_Data_Processing.py`
 3. Based on outputs from 2., process data in FACEMDS format: `MET_Data_Process2FACEMDS.py`
 4. Based on the outputs from 3., we can make ELM input met data files : `METDATA2ELM.py`
+5. Based on the outputs from 4., compare the variables from the exising ELM Data and new ELM Data variables and save files for every month separately; see `ELM_Output_Comp_Resave.ipynb`
 
 ## 1. Errors in Input data.
 ### 1.1 Fixing the duplicate time index
@@ -21,23 +22,23 @@ Usage example:
 This will replace tge gap filled files with correct values <br>
 You will also need to download the file `DuplicateDukeDataCorrectIndexOnly.txt` <br>
 
-### 1.2  Time column has inconsistent time values 
+### 1.2  Time column has inconsistent time values
 Some of the variable have an incorrect time in the observation dataset.
-E.g. below is the SLT. Instead of 1500, the data reads 1460. There are 440 instances just for SLT. 
+E.g. below is the SLT. Instead of 1500, the data reads 1460. There are 440 instances just for SLT.
 
 ```
-4349 1999,3378.56,91,1400,11,11.3,11.2,11.5,11.7,12.6   
-4350 1999,3378.58,91,1430,11.1,11.4,11.2,11.6,11.8,12.6 
-4351 1999,3378.6,91,1460,11.2,11.4,11.3,11.6,11.9,12.6  
-4352 1999,3378.63,91,1530,11.2,11.5,11.4,11.7,12,12.7   
-4353 1999,3378.65,91,1600,11.3,11.5,11.4,11.8,12,12.7  
+4349 1999,3378.56,91,1400,11,11.3,11.2,11.5,11.7,12.6
+4350 1999,3378.58,91,1430,11.1,11.4,11.2,11.6,11.8,12.6
+4351 1999,3378.6,91,1460,11.2,11.4,11.3,11.6,11.9,12.6
+4352 1999,3378.63,91,1530,11.2,11.5,11.4,11.7,12,12.7
+4353 1999,3378.65,91,1600,11.3,11.5,11.4,11.8,12,12.7
 ```
 
 The fix for this in the `MET_Data_Processing.py`
 
 ## 2. Data Processing Sub-hourly
 
-### Variable "AT" 
+### Variable "AT"
 - Air Temperature (Degree Celsius)
 - Renamed to 'Tair'
 - Calculated the mean of the following plots every time step for the from 1997 to 2012
@@ -55,13 +56,13 @@ The fix for this in the `MET_Data_Processing.py`
 - Calculated the mean of the following plots every time step for the from 1997 to 2012
   - 'R1urh', 'R2urh', 'R3urh', 'R4urh','R5urh', 'R6urh', 'R7urh', 'R8urh'
 
-### SM:SM 
-- Soil moisture integrates measurements from 0 to 30cm depth 
+### SM:SM
+- Soil moisture integrates measurements from 0 to 30cm depth
 - Renamed to 'SM'
 - Calculated the mean of the following plots every time step for the from 1997 to 2012
   - 'R1urh', 'R2urh', 'R3urh', 'R4urh','R5urh', 'R6urh', 'R7urh', 'R8urh'
 
-### SWP:SWP 
+### SWP:SWP
 - Soil water potential
 - Renamed to 'SWP'
 - Calculated the mean of the following plots every time step for the from 2007 to 2012
@@ -89,14 +90,14 @@ The fix for this in the `MET_Data_Processing.py`
 
 
 ### Variable "PAR"
-- Photosynthetically active radiation (umol/m^2\*s) 
+- Photosynthetically active radiation (umol/m^2\*s)
 - Renamed to 'PAR'
 - Calculated the mean of the following plots every time step for the from 1997 to 2012
   - 'PAR'
   - 'PAR' had values from only one plot for 1997-2007 and from two plots for 2008-2012, which were averaged and saved in the same csv/txt file.
 
 ### Variable "Rn"
-- Net radiation (W/m^2) 
+- Net radiation (W/m^2)
 - Renamed to 'Rn'
 - Calculated the mean of the following plots every time step for the from 1997 to 2012
   - 'Rn'
@@ -111,9 +112,9 @@ The fix for this in the `MET_Data_Processing.py`
 - The modified PAR will replace the original PAR in the dataset.
 
 ## Varibles copied from Existing FACE MDS data as is:
- - aCO2 	
- - eCO2 	
- - Ndep 	
+ - aCO2
+ - eCO2
+ - Ndep
  - SolarElevation
 
 ### Variable "SWdown"
@@ -129,7 +130,7 @@ We compared Pressure from 4 sources:
 - Existing ESS DIVE (based on NARR)
 - [Raleigh Airport Pressure Readings](https://www.ncei.noaa.gov/access/search/data-search/local-climatological-data?dataTypes=HourlySeaLevelPressure&dataTypes=HourlyStationPressure&dataTypes=HourlyWindDirection&dataTypes=HourlyWindSpeed&pageNum=2&startDate=1996-01-01T00:00:00&endDate=2013-01-01T23:59:59&bbox=36.133,-79.020,35.828,-78.714)
 - ERA5 Pressure (see : `Download_ERA5_Data.py` for links and way to request automated downloads)
-- Ameriflux Duke Station 3 ([Citations](misc/citations_for_site_data_BASE-BADM_20230915.csv)) 
+- Ameriflux Duke Station 3 ([Citations](misc/citations_for_site_data_BASE-BADM_20230915.csv))
 
 The mean surface pressure (Pa) are:
 - ESS DIVE/NARR : 102258
@@ -137,7 +138,7 @@ The mean surface pressure (Pa) are:
 - ERA5: 99818
 - Ameriflux: 99820
 
-Based on this we are using the pressure data from ERA5. See `Download_ERA5_Data.py` to automate downloading data from ERA5. 
+Based on this we are using the pressure data from ERA5. See `Download_ERA5_Data.py` to automate downloading data from ERA5.
 
 ## Wind
 
@@ -162,18 +163,18 @@ filled by using ERA5 data',
 'RH_f':'gap-filling flag',
 'VPD':'Vapor pressure deficit, kPa',
 'VPD_f':'gap-filling flag',
-'PAR':'Incident or downward photosynthetically active radiation',   
-'PAR_f':'gap-filling flag',    
+'PAR':'Incident or downward photosynthetically active radiation',
+'PAR_f':'gap-filling flag',
 'SM':'Soil Moisture integrates measurements from 0 to 30cm depth',
-'SM_f':'gap-filling flag', 
+'SM_f':'gap-filling flag',
 'SWP':' Soil Water Potential',
-'SWP_f':'gap-filling flag', 
+'SWP_f':'gap-filling flag',
 'SVP':'Saturated Vapor Pressure',
-'SVP_f':'gap-filling flag', 
+'SVP_f':'gap-filling flag',
 'Rn':'Net Radiation',
-'Rn_f':'gap-filling flag', 
-'SLT':'Soil Temperature',   
-'SLT_f':'gap-filling flag', 
+'Rn_f':'gap-filling flag',
+'SLT':'Soil Temperature',
+'SLT_f':'gap-filling flag',
 'Wind':'Mean wind speed over a time step of measurement, m/s',
 'Wind_f':'gap-filling flag',
 'PSurf': 'Surface barometric pressure, Pa',

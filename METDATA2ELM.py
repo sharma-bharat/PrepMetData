@@ -3,13 +3,14 @@
 
 # Source : https://github.com/dmricciuto/OLMT/blob/master/metdata_tools/site/data_to_elmbypass.py
 # importing libraries
-import xarray as xr
 import glob
 from datetime import datetime
+
 import cftime
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
+import xarray as xr
 
 # paths
 
@@ -81,8 +82,10 @@ for yr in year_list:
 
 # Running the Code to convert Data to ELM Met data¶
 
+import os
+import sys
+
 from netCDF4 import Dataset
-import os, sys
 
 sys.path.append("/Users/ud4/repos/GitHub/PrepMetData/in_data")
 import gapfill

@@ -10,13 +10,13 @@
 # 2. `Processed_Duke_Met_Data_All_Vars_30m.csv`: FillValue/Missing = NaN or empty
 
 # importing libraries
-import xarray as xr
 import glob
 from datetime import datetime
+
 import cftime
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 # paths

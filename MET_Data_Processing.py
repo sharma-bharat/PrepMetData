@@ -197,6 +197,10 @@ dict_dfs_common[f"{face_var_key}"] = df_tmp_common_gf
 First_Available_date[f"{face_var_key}"] = df_tmp_common_gf.iloc[0]
 Last_Available_date[f"{face_var_key}"] = df_tmp_common_gf.iloc[-1]
 
+# Fix of the times error in the Year of 1999 in the variables ['SLT','VPD', 'SVP']
+times_1999 = np.array(df_tmp_common_gf[df_tmp_common_gf.Year ==1999]['Time'])
+times_1999
+
 
 ### Precip : Rainf
 # units: mm (in 30 mins)
@@ -583,11 +587,6 @@ exp_filename = "Rad"  # Exception in the filename
 files = sorted(glob.glob(f"{paths[key]}DukeFACE_{exp_filename}*/*_gf.csv"))
 
 
-# Define a custom sorting key function to extract the year from the file path
-def extract_year(filepath):
-    return int(filepath.split(f"{exp_filename}")[-1][:4])  # Year
-
-
 # Sort the list of file paths based on the Year
 sorted_filepaths = sorted(files, key=extract_year)
 
@@ -643,11 +642,6 @@ exp_filename = "Rad"  # Exception in the filename
 files = sorted(glob.glob(f"{paths[key]}DukeFACE_{exp_filename}*/*_gf.csv"))
 
 
-# Define a custom sorting key function to extract the year from the file path
-def extract_year(filepath):
-    return int(filepath.split(f"{exp_filename}")[-1][:4])  # Year
-
-
 # Sort the list of file paths based on the Year
 sorted_filepaths = sorted(files, key=extract_year)
 
@@ -694,9 +688,14 @@ dict_dfs_common["PAR_ori"]["PAR_ori"] = dict_dfs_common["PAR_ori"]["PAR"]
 dict_dfs_common["PAR_ori"] = dict_dfs_common["PAR_ori"].drop(["PAR"], axis=1)
 
 
-for lbl, gr in dict_dfs_common["PAR"].groupby(["Year"]):
+per_95 = []
+i=0
+for lbl,gr in dict_dfs_common['PAR'].groupby(['Year']):
+    # Calculate percentiles (10th, 20th, 30th, ..., 100th)
     percentiles = np.arange(10, 101, 5)
-    percentile_values = np.percentile(gr["PAR"], percentiles)
+    percentile_values = np.percentile(gr['PAR'], percentiles)
+    per_95.append((int(lbl), percentile_values[-2]))
+
 
 # Normalizing based on the 95th percent value
 # Assuming that the sensor was good in the first 3 years
@@ -877,6 +876,11 @@ lon_duke = lon_duke - 360
 
 target_latitude = lat_duke
 target_longitude = lon_duke
+
+# Reading ERA5 Files
+key = "*daily_duke_met_ERA5.nc"
+ds_era5_all= xr.open_mfdataset(glob.glob(f"{paths['ERA5_Met']}*.nc"))
+ds_era5_all
 
 # Use .sel() to select the location
 era5_duke_data = ds_era5_all.sel(
