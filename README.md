@@ -19,12 +19,12 @@ There are some duplicate/incorrect time information in the original data in the 
 We wrote a code to fix the files : `FixingDupicateDuke.py` <br>
 Usage example:
 `python FixingDupicateDuke.py -file_ci /Users/ud4/repos/GitHub/FATESFACE/Jupyter_Notebooks/DuplicateDukeDataCorrectIndexOnly.txt -path_data /Users/ud4/Documents/FACEMDS/MET_Data_Processing/Oren_2022_DUKE_Met/data/ -replace_file yes` <br>
-This will replace tge gap filled files with correct values <br>
+This will replace the gap filled files with correct values <br>
 You will also need to download the file `DuplicateDukeDataCorrectIndexOnly.txt` <br>
 
 ### 1.2  Time column has inconsistent time values
-Some of the variable have an incorrect time in the observation dataset.
-E.g. below is the SLT. Instead of 1500, the data reads 1460. There are 440 instances just for SLT.
+Some of the variables have an incorrect time in the observation dataset.
+E.g. Below is the SLT. Instead of 1500, the data reads 1460. There are 440 instances just for SLT.
 
 ```
 4349 1999,3378.56,91,1400,11,11.3,11.2,11.5,11.7,12.6
@@ -107,11 +107,11 @@ The fix for this in the `MET_Data_Processing.py`
 ## Modifications to "PAR"
 - The values of PAR are decreasing over time in the original data. See ![Percentile PAR Plot](misc/PAR_percentile.png) <br>
 - We assume that this is occuring to the degrading PAR sensor. <br>
-- Based on the 95th percentile values, a scalling factor was calculated to attenuate declining PAR ![95th Percentile PAR Plot](misc/95th_per_PAR.png).
+- Based on the 95th percentile values, a scaling factor was calculated to attenuate declining PAR ![95th Percentile PAR Plot](misc/95th_per_PAR.png).
 - The figure below shows the comparison of the original and modified PAR. ![Modified PAR](misc/modified_PAR.png).
 - The modified PAR will replace the original PAR in the dataset.
 
-## Varibles copied from Existing FACE MDS data as is:
+## Variables copied from Existing FACE MDS data as is:
  - aCO2
  - eCO2
  - Ndep
@@ -123,7 +123,8 @@ The fix for this in the `MET_Data_Processing.py`
 
 ### Variable "LWdown"
 - based on the implementation in Oneflux:  https://github.com/fluxnet/ONEFlux/blob/9201beb15e6eca57bd6fd23a16cb5e46d4e2de7a/oneflux_steps/qc_auto/src/main.c#L2851-L2882
-## Surface Pressue
+
+## Surface Pressure
 
 ![Pressure Comparison Plots](misc/Pressure_Comp.png) <br>
 We compared Pressure from 4 sources:
